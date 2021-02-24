@@ -99,41 +99,15 @@ int main(int argc, char *argv[])
             }
         
         // write this result to stdout and do next chunk
-        for(int i = 0; i < keyfileSizeInBytes * numofThreads; i++)
+        for(int i = 0; i < bytesReadFromPlain; i++)
         {
             fwrite(&plainTextValues[i], sizeof(unsigned char),1,stdout);
             fflush(stdout);
         }
         chunkCount =+numofThreads;
+
        bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
     }
-
-    
-    
-
-    // fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", keyfileSizeInBytes);
-    
-    // size_t bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
-
-    // while(bytesReadFromPlain > 0)   
-    // {        
-    //     fprintf(stderr,"How many bytes read from fread() - %ld\n", bytesReadFromPlain);
-
-    //     for(int i = 0; i < bytesReadFromPlain ; i++)
-    //     {   
-    //         fprintf(stderr,"current hex value in keyfile is - %x\n", keyFileValues[i]);
-    //         fprintf(stderr,"current hex value in plainTextValues file is - %x\n", plainTextValues[i]);
-    //         unsigned char currValue = keyFileValues[i] ^ plainTextValues[i];
-    //         fprintf(stderr,"This is the XOR'd value - %x\n", currValue);
-    //         fwrite(&currValue, sizeof(currValue),1,stdout);
-    //         fflush(stdout);
-    //     }
-
-    //     bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
-
-    //     leftRotate(keyFileValues,keyfileSizeInBytes);
-        
-    // }
 
     fclose(keyfilePtr);
     free(plainTextValues);

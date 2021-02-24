@@ -118,8 +118,8 @@ void *threadFunc(void *threadId)
        fprintf(stderr,"my id is %d and I read THIS from plaintext %x\n",myid, plainTextValues[i]);
        
     } 
-
-    for(int i  = 0; i < keyfileSizeInBytes; i++)
+    
+    for(int i  = 0; i < bytesReadFromPlain; i++)
     {
         unsigned char finalVal = threadKeyFileValues[i] ^ plainTextValues[chunkIndex];
         fprintf(stderr,"My id is %d, the result of %x ^ %x is - %x\n",myid, threadKeyFileValues[i],plainTextValues[chunkIndex],finalVal);
@@ -128,10 +128,6 @@ void *threadFunc(void *threadId)
         chunkIndex++;
     }
 
-    // pthread_mutex_lock(&chunkCountLock);
-    // incrementChunkCount();
-    // fprintf(stderr,"my id is %d and I made the chunk count %d!\n",myid,chunkCount);
-    // pthread_mutex_unlock(&chunkCountLock);
 }
 
 void incrementChunkCount()
