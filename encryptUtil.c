@@ -58,20 +58,54 @@ unsigned long int fileSizeInBytes(FILE *file)
     return sizeInBytes;
 }
 //============================================================
-void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize)
+void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize, int numRotations)
 {
     unsigned char prev;
     unsigned char next;
 
-
-    // will left rotate entire file
-    for(unsigned long int i = 0; i < fileSize; i++)
+    fprintf(stderr,"Attempting to rotate - %d times!\n",numRotations);
+    while(numRotations > 0 )
     {
-        prev = ( (keyFileHexValues[i] >> 7 ) & 1);
-        fprintf(stderr,"This is current data before rotate: %x\n", keyFileHexValues[i]);
-        next = keyFileHexValues[i];
-        keyFileHexValues[i] = (keyFileHexValues[i] << 1 | prev ); 
-        prev = next;
-        fprintf(stderr, "This is current data after rotate: %x\n", keyFileHexValues[i]);
+        for(unsigned long int i = 0; i < fileSize; i++)
+        {
+            prev = ( (keyFileHexValues[i] >> 7 ) & 1);
+            fprintf(stderr,"This is current data before rotate: %x\n", keyFileHexValues[i]);
+            next = keyFileHexValues[i];
+            keyFileHexValues[i] = (keyFileHexValues[i] << 1 | prev ); 
+            prev = next;
+            fprintf(stderr, "This is current data after rotate: %x\n", keyFileHexValues[i]);
+        }
+
+        numRotations--;
     }
+    
+}
+//============================================================
+
+void *threadFunc(void *threadId)
+{
+    int myid = (int)threadId;
+
+    // check if malloc failed.
+    unsigned char* threadKeyFileValues = (unsigned char*) malloc(keyfileSizeInBytes * sizeof(unsigned char));
+
+    //deep copy initialkeyvalues to threadkeyvalues;
+
+    for(int i = 0; i < keyfileSizeInBytes; i++)
+    {
+        threadKeyFileValues[i] = initialkeyFileValues[i];
+    }
+    
+
+    //rotate hexvalues thread id times to start
+    leftRotate(threadKeyFileValues,keyfileSizeInBytes,myid);
+    // after initial roation, we rotate threadcount times to get next chunk curr thread will use.
+
+    fprintf(stderr,"My thread id is %d!\n", myid);
+
+    for(int i = 0; i < keyfileSizeInBytes; i++)
+    {
+        fprintf(stderr,"my thread id is %d and I wouldve worked on %x\n", myid, threadKeyFileValues[i]);
+    }
+    
 }

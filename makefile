@@ -1,4 +1,4 @@
-CC = gcc -Wextra -Wall
+CC = gcc -Wextra -Wall -lpthread -pthread
 
 
 all: encryptUtil.o main.o  

@@ -27,18 +27,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    unsigned long int keyfileSizeInBytes;
+    //unsigned long int keyfileSizeInBytes;
     unsigned char *plainTextValues;
-
-    //FILE *plainTextValuesFilePtr;
 
     
 
-    // if(keyfileSizeInBytes > 0 )
-    // {
-    //     fprintf(stderr,"KEYFILE SIZE IS %ld\n", keyfileSizeInBytes);
-    //     return 1;
-    // }
+    // FILE *plainTextValuesFilePtr;
     // keyfilePtr = fopen(argv[1],"r+b");
    
     // if(keyfilePtr == NULL)
@@ -68,33 +62,56 @@ int main(int argc, char *argv[])
     plainTextValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes);
  
     // cast file map to array of unsigned chars
-    unsigned char *keyFileValues = (unsigned char*)fileMap;
+    initialkeyFileValues = (unsigned char*)fileMap;
 
-    fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", keyfileSizeInBytes);
-    
-    size_t bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
+    int numofThreads = 2;
+    pthread_t threadArr[numofThreads];
+    fprintf(stderr,"THESE ARE OUR STARTING VALUES\n");
 
-    while(bytesReadFromPlain > 0)   
-    {        
-        fprintf(stderr,"How many bytes read from fread() - %ld\n", bytesReadFromPlain);
+    for(int i = 0 ; i < keyfileSizeInBytes; i++)
+    {
+        fprintf(stderr,"%x ",initialkeyFileValues[i]);
+    }
+    fprintf(stderr,"\n\n");
 
-        for(int i = 0; i < bytesReadFromPlain ; i++)
-        {   
-            fprintf(stderr,"current hex value in keyfile is - %x\n", keyFileValues[i]);
-            fprintf(stderr,"current hex value in plainTextValues file is - %x\n", plainTextValues[i]);
-            unsigned char currValue = keyFileValues[i] ^ plainTextValues[i];
-            fprintf(stderr,"This is the XOR'd value - %x\n", currValue);
-            fwrite(&currValue, sizeof(currValue),1,stdout);
-            fflush(stdout);
-        }
-
-        bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
-
-        leftRotate(keyFileValues,keyfileSizeInBytes);
-        
+    for(int i = 0; i < numofThreads ; i++)
+    {
+        pthread_create(&threadArr[i],NULL, &threadFunc, (void*)(long)i);
     }
 
+    for(int i = 0; i < numofThreads; i++)
+    {
+        pthread_join(threadArr[i], NULL);
+    }
+
+    //leftRotate(keyFileValues,keyfileSizeInBytes, 2);
+
+    // fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", keyfileSizeInBytes);
+    
+    // size_t bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
+
+    // while(bytesReadFromPlain > 0)   
+    // {        
+    //     fprintf(stderr,"How many bytes read from fread() - %ld\n", bytesReadFromPlain);
+
+    //     for(int i = 0; i < bytesReadFromPlain ; i++)
+    //     {   
+    //         fprintf(stderr,"current hex value in keyfile is - %x\n", keyFileValues[i]);
+    //         fprintf(stderr,"current hex value in plainTextValues file is - %x\n", plainTextValues[i]);
+    //         unsigned char currValue = keyFileValues[i] ^ plainTextValues[i];
+    //         fprintf(stderr,"This is the XOR'd value - %x\n", currValue);
+    //         fwrite(&currValue, sizeof(currValue),1,stdout);
+    //         fflush(stdout);
+    //     }
+
+    //     bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
+
+    //     leftRotate(keyFileValues,keyfileSizeInBytes);
+        
+    // }
+
     fclose(keyfilePtr);
+    free(plainTextValues);
 
     return 0;
 }
