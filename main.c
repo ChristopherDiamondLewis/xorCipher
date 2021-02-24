@@ -27,8 +27,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //unsigned long int keyfileSizeInBytes;
-    unsigned char *plainTextValues;
+    chunkCount = 0;
+
+    // unsigned long int keyfileSizeInBytes;
+    // unsigned char *plainTextValues;
 
     
 
@@ -53,38 +55,61 @@ int main(int argc, char *argv[])
     
     keyfileSizeInBytes = fileSizeInBytes(keyfilePtr);
 
+    numofThreads = 2;
+
     // get file descriptor for keyfile 
     int fileDes = fileno(keyfilePtr);
     // use mmap to map file to process current memory
     void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
     
     //allocate 'chunk' for plain text array.
-    plainTextValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes);
+    plainTextValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes * numofThreads);
  
     // cast file map to array of unsigned chars
     initialkeyFileValues = (unsigned char*)fileMap;
 
-    int numofThreads = 2;
     pthread_t threadArr[numofThreads];
-    fprintf(stderr,"THESE ARE OUR STARTING VALUES\n");
 
-    for(int i = 0 ; i < keyfileSizeInBytes; i++)
+    // keep reading until bytes read less than 0
+    bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
+    while(bytesReadFromPlain > 0 )
     {
-        fprintf(stderr,"%x ",initialkeyFileValues[i]);
-    }
-    fprintf(stderr,"\n\n");
+        for(int i = 0 ; i < bytesReadFromPlain; i++)
+        {
+            fprintf(stderr,"These were the bytes read - %x\n",plainTextValues[i]);
+        }
 
-    for(int i = 0; i < numofThreads ; i++)
-    {
-        pthread_create(&threadArr[i],NULL, &threadFunc, (void*)(long)i);
+
+        fprintf(stderr,"THESE ARE OUR STARTING KEYVALUES\n");
+
+        for(int i = 0 ; i < keyfileSizeInBytes; i++)
+        {
+            fprintf(stderr,"%x ",initialkeyFileValues[i]);
+        }
+        fprintf(stderr,"\n\n");
+
+        for(int i = 0; i < numofThreads ; i++)
+        {
+            pthread_create(&threadArr[i],NULL, &threadFunc, (void*)(long)i);
+        }
+
+        for(int i = 0; i < numofThreads; i++)
+            {
+                pthread_join(threadArr[i], NULL);
+            }
+        
+        // write this result to stdout and do next chunk
+        for(int i = 0; i < keyfileSizeInBytes * numofThreads; i++)
+        {
+            fwrite(&plainTextValues[i], sizeof(unsigned char),1,stdout);
+            fflush(stdout);
+        }
+        chunkCount =+numofThreads;
+       bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
     }
 
-    for(int i = 0; i < numofThreads; i++)
-    {
-        pthread_join(threadArr[i], NULL);
-    }
-
-    //leftRotate(keyFileValues,keyfileSizeInBytes, 2);
+    
+    
 
     // fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", keyfileSizeInBytes);
     

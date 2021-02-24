@@ -18,6 +18,13 @@
 FILE *keyfilePtr;
 unsigned char *initialkeyFileValues;
 unsigned long int keyfileSizeInBytes;
+unsigned char *plainTextValues;
+int numofThreads;
+size_t bytesReadFromPlain;
+pthread_mutex_t chunkCountLock;
+
+size_t chunkCount;
+
 
 int checkArgs(int argc, char *argv[]);
 
@@ -25,3 +32,5 @@ void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize, int
 unsigned long int fileSizeInBytes(FILE *file);
 
 void *threadFunc(void *threadId);
+
+void incrementChunkCount();
