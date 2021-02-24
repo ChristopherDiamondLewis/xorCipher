@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     
     keyfileSizeInBytes = fileSizeInBytes(keyfilePtr);
 
-    numofThreads = 2;
+    numofThreads = 99;
 
     // get file descriptor for keyfile 
     int fileDes = fileno(keyfilePtr);
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
     
     //allocate 'chunk' for plain text array.
+    //TODO CHECK VALUE OF MALLOC
     plainTextValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes * numofThreads);
  
     // cast file map to array of unsigned chars
@@ -94,9 +95,9 @@ int main(int argc, char *argv[])
         }
 
         for(int i = 0; i < numofThreads; i++)
-            {
-                pthread_join(threadArr[i], NULL);
-            }
+        {
+            pthread_join(threadArr[i], NULL);
+        }
         
         // write this result to stdout and do next chunk
         for(int i = 0; i < bytesReadFromPlain; i++)
