@@ -11,125 +11,94 @@
 
 
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/mman.h> //< for mmap
-#include <stdlib.h>
+
 
 #include "encryptUtil.h"
 
 
-unsigned long int fileSizeInBytes(char *file);
 void restoreTestKeyfile(FILE *fileptr);
 void restoreTestPlainFile(FILE *fileptr);
 
-void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize);
-
-
 int main(int argc, char *argv[])
 {
-    unsigned long int sizeInBytes;
-    unsigned long int chunkSize;
 
-    unsigned char *plainText;
-
-    FILE *keyfilePtr;
-    FILE *plainTextFilePtr;
-
-    sizeInBytes = fileSizeInBytes(argv[1]);
-
-    //printf("This is the size of the KEYFILE in bytes %ld\n", sizeInBytes);
-
-    keyfilePtr = fopen(argv[1],"r+b");
-   
-    if(keyfilePtr == NULL)
+    if(checkArgs(argc,argv) == EXIT_FAILURE)
     {
-        fprintf(stderr, "Error could not open keyfile or plainTextfile!\n");
         return 1;
     }
 
-    // plainTextFilePtr = fopen(argv[2], "r+b");
+    unsigned long int keyfileSizeInBytes;
+    unsigned char *plainTextValues;
+
+    //FILE *plainTextValuesFilePtr;
+
+    
+
+    // if(keyfileSizeInBytes > 0 )
+    // {
+    //     fprintf(stderr,"KEYFILE SIZE IS %ld\n", keyfileSizeInBytes);
+    //     return 1;
+    // }
+    // keyfilePtr = fopen(argv[1],"r+b");
+   
+    // if(keyfilePtr == NULL)
+    // {
+    //     fprintf(stderr, "Error could not open keyfile or plainTextValuesfile!\n");
+    //     return 1;
+    // }
+
+    // plainTextValuesFilePtr = fopen(argv[2], "r+b");
 
     // if(keyfilePtr != NULL)
     // {
     //     restoreTestKeyfile(keyfilePtr);
-    //     restoreTestPlainFile(plainTextFilePtr);
+    //     restoreTestPlainFile(plainTextValuesFilePtr);
     //     fprintf(stderr,"FILE RESTORED!\n");
     //     return 1;
     // }
     
+    keyfileSizeInBytes = fileSizeInBytes(keyfilePtr);
 
-    // get file descriptor
+    // get file descriptor for keyfile 
     int fileDes = fileno(keyfilePtr);
-    // use mmap to map file to process curren memory
-    void *fileMap = mmap(NULL, sizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
+    // use mmap to map file to process current memory
+    void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
     
-
-    // change stdin to read in binary mode
-    freopen(NULL, "r+b", stdin);
-
-
     //allocate 'chunk' for plain text array.
-    // allocateChunk();
-    chunkSize = sizeInBytes;
-    plainText = (unsigned char*)malloc(sizeof(unsigned char) * chunkSize);
+    plainTextValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes);
+ 
+    // cast file map to array of unsigned chars
+    unsigned char *keyFileValues = (unsigned char*)fileMap;
 
-   
+    fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", keyfileSizeInBytes);
     
-    //printf("This was read in from stdin - %x\n", plainText[0]); 
-    // change file map to char ptrs;
-    unsigned char *hexValues = (unsigned char*)fileMap;
-    fgets(plainText, 2 * chunkSize, stdin);
-    fprintf(stderr,"OUR CHUNK SIZE IS - %ld \n", chunkSize);
-    size_t chunkReadFromPlain = 0;
+    size_t bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
 
-    
-    while(0 < (chunkReadFromPlain = fread(plainText,1, chunkSize, stdin)) != 0)//<WHAT HAPPENS WHEN  NOT CLEAN MULTIPLES OF CHUNKS   
-    {
-        feof(stdin);
-        
-        fprintf(stderr,"How many bytes read from fread() - %ld\n", chunkReadFromPlain);
+    while(bytesReadFromPlain > 0)   
+    {        
+        fprintf(stderr,"How many bytes read from fread() - %ld\n", bytesReadFromPlain);
 
-        for(int i = 0; i < chunkReadFromPlain ; i++)
-        {            
-            fprintf(stderr,"current hex value in keyfile is - %x\n", hexValues[i]);
-            fprintf(stderr,"current hex value in plaintext file is - %x\n", plainText[i]);
-            unsigned char currValue = hexValues[i] ^ plainText[i];
+        for(int i = 0; i < bytesReadFromPlain ; i++)
+        {   
+            fprintf(stderr,"current hex value in keyfile is - %x\n", keyFileValues[i]);
+            fprintf(stderr,"current hex value in plainTextValues file is - %x\n", plainTextValues[i]);
+            unsigned char currValue = keyFileValues[i] ^ plainTextValues[i];
             fprintf(stderr,"This is the XOR'd value - %x\n", currValue);
             fwrite(&currValue, sizeof(currValue),1,stdout);
             fflush(stdout);
-
         }
 
-        leftRotate(hexValues,sizeInBytes);
+        bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes, stdin);
+
+        leftRotate(keyFileValues,keyfileSizeInBytes);
         
     }
 
-    
+    fclose(keyfilePtr);
 
-    
     return 0;
 }
-void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize)
-{
-    // cast map to unsigned char ptrs
-    // unsigned char *hexValues = (unsigned char*)fileMap;
 
-    unsigned char prev;
-    unsigned char next;
-
-
-    // will left rotate entire file
-    for(unsigned long int i = 0; i < fileSize; i++)
-    {
-        prev = ( (keyFileHexValues[i] >> 7 ) & 1);
-       // printf("This is current data before rotate: %x\n", keyFileHexValues[i]);
-        next = keyFileHexValues[i];
-        keyFileHexValues[i] = (keyFileHexValues[i] << 1 | prev ); 
-        prev = next;
-       // printf("This is current data after rotate: %x\n", keyFileHexValues[i]);
-    }
-
-}
 void restoreTestKeyfile(FILE *file)
 {
 
@@ -167,27 +136,4 @@ void restoreTestPlainFile(FILE *fileptr)
     fwrite(&value10, sizeof(value8),1,fileptr);
     fwrite(&value11, sizeof(value8),1,fileptr);
 
-}
-unsigned long int fileSizeInBytes(char *filename)
-{
-
-    FILE *currentFile = fopen(filename, "r+b");
-
-    if(currentFile == NULL)
-    {
-        fprintf(stderr, "ERROR: Unable to open file - %s\n",filename);
-        return -1; 
-    }
-
-    // fseek to end of file
-    fseek(currentFile,0 , SEEK_END);
-
-
-    unsigned long int sizeInBytes = ftell(currentFile);
-
-    //close our file.
-
-    fclose(currentFile);
-
-    return sizeInBytes;
 }
