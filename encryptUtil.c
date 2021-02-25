@@ -58,7 +58,7 @@ unsigned long int fileSizeInBytes(FILE *file)
     return sizeInBytes;
 }
 //============================================================
-void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize, int numRotations)
+void leftRotate(unsigned char *hexValues, unsigned long int fileSize, int numRotations)
 {
     unsigned char prev;
     unsigned char next;
@@ -67,10 +67,9 @@ void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize, int
     {
         for(unsigned long int i = 0; i < fileSize; i++)
         {
-            prev = ( (keyFileHexValues[i] >> 7 ) & 1);
-            next = keyFileHexValues[i];
-            keyFileHexValues[i] = (keyFileHexValues[i] << 1 | prev ); 
-            prev = next;
+            prev = ( (hexValues[i] >> 7 ) & 1);
+            next = hexValues[i];
+            hexValues[i] = (hexValues[i] << 1 | prev ); 
         }
 
         numRotations--;
@@ -96,12 +95,14 @@ void *threadFunc(void *threadId)
 
     leftRotate(threadKeyFileValues,keyfileSizeInBytes,rotateAmount);
 
-    int chunkIndex = (myid % numofThreads) * 2;
+    int chunkIndex = (myid % numofThreads) * keyfileSizeInBytes;
 
     for(int i  = 0; i < keyfileSizeInBytes; i++)
     {
+        pthread_mutex_lock(&plainTextValuesMtx);
         unsigned char finalVal = threadKeyFileValues[i] ^ plainTextValues[chunkIndex];
         plainTextValues[chunkIndex] = finalVal;
+        pthread_mutex_unlock(&plainTextValuesMtx);
         chunkIndex++;
     }
 
