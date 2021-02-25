@@ -5,6 +5,10 @@
 *
 */
 
+#ifndef ENCRYPT_H
+#define ENCRYPT_H
+
+
 #include <unistd.h>
 #include <sys/mman.h> //< for mmap
 #include <stdio.h>
@@ -80,3 +84,6 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 */                          
         void *threadFunc(void *threadId);
 
+//< END OF ENCRYPT DEFINITION
+
+#endif

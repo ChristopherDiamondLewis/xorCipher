@@ -4,10 +4,12 @@
 *   @date 2/24/2021
 *   @brief Implementation file for XOR encryptor
 *
-*   @TODO documenation
+*   @note Please refer to .h file for documenation of 'tricky' calculations.
 */
+
 #include "encryptUtil.h"
 
+//============================================================
 int checkArgs(int argc, char *argv[])
 {
     
@@ -41,18 +43,14 @@ int checkArgs(int argc, char *argv[])
 unsigned long int fileSizeInBytes(FILE *file)
 {
 
-    // FILE *currentFile = fopen(filename, "r+b");
-
     if(file == NULL)
     {
         fprintf(stderr, "ERROR: passed in NULL file pointer cannot calculate size!\n");
         return -1; 
     }
 
-    // fseek to end of file
     fseek(file,0 , SEEK_END);
 
-    // retrieve number of bytes within file.
     unsigned long int sizeInBytes = ftell(file);    
 
     return sizeInBytes;
@@ -61,14 +59,12 @@ unsigned long int fileSizeInBytes(FILE *file)
 void leftRotate(unsigned char *hexValues, unsigned long int fileSize, int numRotations)
 {
     unsigned char prev;
-    unsigned char next;
 
     while(numRotations > 0 )
     {
         for(unsigned long int i = 0; i < fileSize; i++)
         {
             prev = ( (hexValues[i] >> 7 ) & 1);
-            next = hexValues[i];
             hexValues[i] = (hexValues[i] << 1 | prev ); 
         }
 
@@ -84,11 +80,15 @@ void *threadFunc(void *threadId)
     // check if malloc failed.
     unsigned char* threadKeyFileValues = (unsigned char*) malloc(keyfileSizeInBytes * sizeof(unsigned char));
 
-    //deep copy initialkeyvalues to threadkeyvalues;
-
-    for(int i = 0; i < keyfileSizeInBytes; i++)
+    if(threadKeyFileValues == NULL)
     {
-        threadKeyFileValues[i] = initialkeyFileValues[i];
+        fprintf(stderr,"Error unable to get more memory in - %s", __func__);
+        return (void*)EXIT_FAILURE;
+    }
+
+    for(unsigned int i = 0; i < keyfileSizeInBytes; i++)
+    {
+        threadKeyFileValues[i] = initialkeyFileValues[i]; //< deep copy here to avoid changing orignal keyfile.
     }
 
     int rotateAmount = (myid + chunkCount) % (keyfileSizeInBytes * 8);
@@ -97,7 +97,7 @@ void *threadFunc(void *threadId)
 
     int chunkIndex = (myid % numofThreads) * keyfileSizeInBytes;
 
-    for(int i  = 0; i < keyfileSizeInBytes; i++)
+    for(unsigned int i  = 0; i < keyfileSizeInBytes; i++)
     {
         pthread_mutex_lock(&plainTextValuesMtx);
         unsigned char finalVal = threadKeyFileValues[i] ^ plainTextValues[chunkIndex];
@@ -106,5 +106,8 @@ void *threadFunc(void *threadId)
         chunkIndex++;
     }
 
+    // Dont' forget to free!
     free(threadKeyFileValues);
+
+    return (void*)EXIT_SUCCESS;
 }
