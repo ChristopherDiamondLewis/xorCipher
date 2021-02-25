@@ -27,35 +27,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    chunkCount = 0;
-
-    // unsigned long int keyfileSizeInBytes;
-    // unsigned char *plainTextValues;
-
-    
-
-    // FILE *plainTextValuesFilePtr;
-    // keyfilePtr = fopen(argv[1],"r+b");
-   
-    // if(keyfilePtr == NULL)
-    // {
-    //     fprintf(stderr, "Error could not open keyfile or plainTextValuesfile!\n");
-    //     return 1;
-    // }
-
-    // plainTextValuesFilePtr = fopen(argv[2], "r+b");
-
-    // if(keyfilePtr != NULL)
-    // {
-    //     restoreTestKeyfile(keyfilePtr);
-    //     restoreTestPlainFile(plainTextValuesFilePtr);
-    //     fprintf(stderr,"FILE RESTORED!\n");
-    //     return 1;
-    // }
     
     keyfileSizeInBytes = fileSizeInBytes(keyfilePtr);
-
-    numofThreads = 99;
 
     // get file descriptor for keyfile 
     int fileDes = fileno(keyfilePtr);
@@ -73,6 +46,7 @@ int main(int argc, char *argv[])
 
     // keep reading until bytes read less than 0
     bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
+
     while(bytesReadFromPlain > 0 )
     {
         for(int i = 0 ; i < bytesReadFromPlain; i++)
@@ -80,7 +54,13 @@ int main(int argc, char *argv[])
             fprintf(stderr,"These were the bytes read - %x\n",plainTextValues[i]);
         }
 
+        int optimalNumOfThreads = (bytesReadFromPlain / keyfileSizeInBytes) + (bytesReadFromPlain % keyfileSizeInBytes);
 
+        if(optimalNumOfThreads > numofThreads)
+        {
+            optimalNumOfThreads = numofThreads;
+        }
+        fprintf(stderr,"ASKED TO MAKE %d threads but will only make %d threads\n",numofThreads,optimalNumOfThreads);
         fprintf(stderr,"THESE ARE OUR STARTING KEYVALUES\n");
 
         for(int i = 0 ; i < keyfileSizeInBytes; i++)
@@ -89,23 +69,24 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr,"\n\n");
 
-        for(int i = 0; i < numofThreads ; i++)
+        for(int i = 0; i < optimalNumOfThreads  ; i++)
         {
             pthread_create(&threadArr[i],NULL, &threadFunc, (void*)(long)i);
         }
 
-        for(int i = 0; i < numofThreads; i++)
+        for(int i = 0; i < optimalNumOfThreads ; i++)
         {
             pthread_join(threadArr[i], NULL);
         }
         
-        // write this result to stdout and do next chunk
+        // write this result to stdout and process next chunk
         for(int i = 0; i < bytesReadFromPlain; i++)
         {
             fwrite(&plainTextValues[i], sizeof(unsigned char),1,stdout);
             fflush(stdout);
         }
-        chunkCount =+numofThreads;
+        
+        chunkCount +=numofThreads;
 
        bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
     }

@@ -18,9 +18,9 @@ int checkArgs(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    int threadCount = atoi(argv[2]);
+    numofThreads = atoi(argv[2]);
 
-    if(threadCount > THREAD_MAX || threadCount < 0)
+    if(numofThreads > THREAD_MAX || numofThreads < 0)
     {
         fprintf(stderr,"Number of threads requested out of range.\n");
         fprintf(stderr,"Thread count range is [%d - %d] inclusive.\n", 1, THREAD_MAX);
