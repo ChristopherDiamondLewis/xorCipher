@@ -78,7 +78,6 @@ void leftRotate(unsigned char *keyFileHexValues, unsigned long int fileSize, int
     
 }
 //============================================================
-
 void *threadFunc(void *threadId)
 {
     int myid = (int)threadId;
@@ -93,35 +92,18 @@ void *threadFunc(void *threadId)
         threadKeyFileValues[i] = initialkeyFileValues[i];
     }
 
-    
-    int rotateAmount = myid + chunkCount;
-    fprintf(stderr,"My id is %d, and i will rotate keyfile %d times\n", myid,rotateAmount);
-    
-    leftRotate(threadKeyFileValues,keyfileSizeInBytes,rotateAmount );
-    // after initial roation, we rotate threadcount times to get next chunk curr thread will use.
+    int rotateAmount = (myid + chunkCount) % (keyfileSizeInBytes * 8);
 
-    for(int i = 0; i < keyfileSizeInBytes; i++)
-    {
-        fprintf(stderr,"my thread id is %d and I wouldve worked on %x\n", myid, threadKeyFileValues[i]);
-    }
-    
+    leftRotate(threadKeyFileValues,keyfileSizeInBytes,rotateAmount);
+
     int chunkIndex = (myid % numofThreads) * 2;
 
-    fprintf(stderr,"My id is %d, and my chunk index is %d on the %d chunk\n",myid,chunkIndex,chunkCount);
-
-    for(int i = chunkIndex ; i < bytesReadFromPlain / numofThreads + chunkIndex; i++)
-    {
-       fprintf(stderr,"my id is %d and I read THIS from plaintext %x\n",myid, plainTextValues[i]);
-       
-    } 
-    
     for(int i  = 0; i < keyfileSizeInBytes; i++)
     {
         unsigned char finalVal = threadKeyFileValues[i] ^ plainTextValues[chunkIndex];
-        fprintf(stderr,"My id is %d, the result of %x ^ %x is - %x\n",myid, threadKeyFileValues[i],plainTextValues[chunkIndex],finalVal);
         plainTextValues[chunkIndex] = finalVal;
-        fprintf(stderr,"my id is %d, i assigned finalval to plaintext at %d index\n",myid,chunkIndex);
         chunkIndex++;
     }
 
+    free(threadKeyFileValues);
 }

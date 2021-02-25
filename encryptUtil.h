@@ -13,17 +13,17 @@
 #include <pthread.h>
 
 
-#define THREAD_MAX 20
+#define THREAD_MAX 99
 
 FILE *keyfilePtr;
 unsigned char *initialkeyFileValues;
 unsigned long int keyfileSizeInBytes;
 unsigned char *plainTextValues;
 int numofThreads;
-size_t bytesReadFromPlain;
+unsigned long bytesReadFromPlain;
 pthread_mutex_t chunkCountLock;
 
-size_t chunkCount;
+unsigned long chunkCount;
 
 
 int checkArgs(int argc, char *argv[]);
@@ -33,4 +33,3 @@ unsigned long int fileSizeInBytes(FILE *file);
 
 void *threadFunc(void *threadId);
 
-void incrementChunkCount();
