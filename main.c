@@ -33,10 +33,11 @@ int main(int argc, char *argv[])
     // get file descriptor for keyfile 
     int fileDes = fileno(keyfilePtr);
     // use mmap to map file to process current memory
-    void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
+    void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_PRIVATE,fileDes,0);
     // cast file map to array of unsigned chars
-    initialkeyFileValues = (unsigned char*)malloc(sizeof(unsigned char) * keyfileSizeInBytes);
     initialkeyFileValues = (unsigned char*)fileMap;
+
+
 
 
 
@@ -54,14 +55,13 @@ int main(int argc, char *argv[])
     while(bytesReadFromPlain > 0 )
     {
         int optimalThreadCount = (bytesReadFromPlain / keyfileSizeInBytes) + (bytesReadFromPlain % keyfileSizeInBytes);
-        fprintf(stderr,"Optimal thread count is: %d\n",optimalThreadCount);
+        
         if(numofThreads < optimalThreadCount)
         {
-            
             optimalThreadCount = numofThreads;
         }
 
-        fprintf(stderr,"Number of threads requested: %d - optimal threads choosen: %d\n",numofThreads, optimalThreadCount);
+        
 
         for(int i = 0; i < optimalThreadCount  ; i++)
         {
@@ -79,9 +79,8 @@ int main(int argc, char *argv[])
             fwrite(&plainTextValues[i], sizeof(unsigned char),1,stdout);
            // fflush(stdout);
         }
-        fprintf(stderr,"Just finished chunk: %ld\n", chunkCount);
+
         chunkCount +=optimalThreadCount;
-        fprintf(stderr,"Starting now on chunk: %ld\n",chunkCount);
 
        bytesReadFromPlain = fread(plainTextValues,1, keyfileSizeInBytes * numofThreads, stdin);
     }
