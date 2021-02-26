@@ -11,6 +11,5 @@ which are also located in this folder.This program also works on videos!
 Please feel free to test this with any file as the keyfile, just ensure you use the 
 same key to DECRYPT that was used to ENCRYPT.
 
-
 THANK YOU,
 Chris
