@@ -77,7 +77,6 @@ void *threadFunc(void *threadId)
 {
     int myid = (int)threadId;
 
-    // check if malloc failed.
     unsigned char* threadKeyFileValues = (unsigned char*) malloc(keyfileSizeInBytes * sizeof(unsigned char));
 
     if(threadKeyFileValues == NULL)

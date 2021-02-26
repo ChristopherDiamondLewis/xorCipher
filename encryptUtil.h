@@ -33,10 +33,10 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 *   @brief Fuction will check arguments passed in from command line
 *           for correct argument count, ensure number of threads asked for
 *           is within defined range and that the file that will be used for 
-*           encrypting (keyfile) is an valid file and does open.
+*           encrypting (keyfile) is a valid file and does open.
 *
 *   @param[in] argc, of type int meant to be the number of command line arguments.
-*   @param[in] argv, of type array of character ptrs, meant to vector of passed in arguments.
+*   @param[in] argv, of type array of character ptrs, meant to be vector of passed in arguments.
 *   @param[out] integer that will be 1 (EXIT_FAILURE) if failure or 0 (EXIT_SUCCESS) if function found no errors.
 */
         int checkArgs(int argc, char *argv[]);
@@ -44,7 +44,7 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 *   @brief Function will circular left rotate any given array of values a 'numRotations' amount of times
 *           
 *   @param[in] hexValues, of type unsigned char pointers, used as array of values that will be rotated.
-*   @param[in] fileSize, of type unsigned long int, meant to represent size of file in bytes, used to determine how many bytes we must rotate
+*   @param[in] fileSize, of type unsigned long int, meant to represent size of file in bytes, used to determine how many bytes we must rotate.
 *   @param[in] numRotations, of type int meant to represent how many times the function will rotate the whole array.
 *
 */  
@@ -52,7 +52,7 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 
 /*
 *   @brief Function will return the number of bytes in any given file.
-*   @note  Must pass in an alredy opened file as this function will neither open or close it.
+*   @note  Must pass in an already opened file as this function will neither open or close it.
 *
 *   @param[in] file, of type FILE pointer, used to determine where to start size calculation.
 *   @param[out] sizeInBytes, of type unsigned long int, size of passed in file.
@@ -78,8 +78,8 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 *                           For any given chunk that the program is processing each thread has to know what part
 *                           of that chunk to work on, this calculation will determine that.
 *                        
-*   @note It is possible for numOfThreads to not be equal to threads actually being ran
-*           this would be done for optimization purposes.
+*   @note It is possible for numOfThreads to not be equal to threads actually being ran.
+*           This would be done for optimization purposes.
 *
 */                          
         void *threadFunc(void *threadId);

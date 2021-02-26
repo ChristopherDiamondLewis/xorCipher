@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
     //grab the size of the keyile in bytes.
     keyfileSizeInBytes = fileSizeInBytes(keyfilePtr);
 
-    // get file descriptor for keyfile 
+    // get file descriptor for keyfile. 
     int fileDes = fileno(keyfilePtr);
-    // use mmap to map file to process current memory
+    // use mmap to map file to process current memory.
     void *fileMap = mmap(NULL, keyfileSizeInBytes, PROT_READ|PROT_WRITE, MAP_SHARED,fileDes,0);
-    // cast file map to array of unsigned chars
+    // cast file map to array of unsigned chars.
     initialkeyFileValues = (unsigned char*)fileMap;
 
     // allocate space for largest chunk we could read in from plain text.
@@ -82,13 +82,13 @@ int main(int argc, char *argv[])
             pthread_join(threadArr[i], NULL);
         }
         
-        // write our result to stdout and process next chunk
+        // write our result to stdout and process next chunk.
         for(unsigned int i = 0; i < bytesReadFromPlain; i++)
         {
             fwrite(&plainTextValues[i], sizeof(unsigned char),1,stdout);
         }
         // add to chunk count the amount of threads that just did work
-        // this is always rounded up if there are 'partial' chunks.
+        // this is always rounded up by 1 if there are 'partial' chunks.
         chunkCount +=optimalThreadCount;
 
        // attempt to read in more bytes from our plaintext. 
