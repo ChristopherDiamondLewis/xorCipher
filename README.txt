@@ -7,7 +7,11 @@ can pipe the files named 'appleEncrypted.jpg' and 'diceEncrypted.jpg' while usin
 keyfile provided and redirecting output to a any .jpg file. You will see the end result
 of 'appleEncrypted.jpg' and 'diceEncrypted.jpg' being the same as their respective 'orignal' 
 <<<<<<< HEAD
+<<<<<<< HEAD
 which are also located in this folder.This program also works on videos!
+=======
+which are also located in this folder.This also works on large video files!
+>>>>>>> 2c9be73d0a58b915c6008adebb1ad02826a2e0d3
 =======
 which are also located in this folder.This also works on large video files!
 >>>>>>> 2c9be73d0a58b915c6008adebb1ad02826a2e0d3
