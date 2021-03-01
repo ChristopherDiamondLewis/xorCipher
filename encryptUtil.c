@@ -58,14 +58,27 @@ unsigned long int fileSizeInBytes(FILE *file)
 //============================================================
 void leftRotate(unsigned char *hexValues, unsigned long int fileSize, int numRotations)
 {
-    unsigned char prev;
+    unsigned char curr_msb;
+    unsigned char first_bit_in_file;
 
     while(numRotations > 0 )
     {
         for(unsigned long int i = 0; i < fileSize; i++)
         {
-            prev = ( (hexValues[i] >> 7 ) & 1);
-            hexValues[i] = (hexValues[i] << 1 | prev ); 
+            if(i == 0)
+            {
+                first_bit_in_file = (hexValues[i] >> 7) & 1;
+            }
+            else if(i == fileSize - 1)
+            {
+                curr_msb = (hexValues[i] >> 7) & 1;
+                hexValues[i - 1] = (hexValues[i - 1] << 1 | curr_msb);
+                hexValues[i] = (hexValues[i] << 1 | first_bit_in_file);
+            }
+            else
+            {
+                hexValues[i - 1] = (hexValues[i - 1] << 1 | curr_msb);
+            }
         }
 
         numRotations--;
