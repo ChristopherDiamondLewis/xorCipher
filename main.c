@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     
     if(plainTextValues == NULL)
     {
-        fprintf(stderr,"Error unable to get more memory in - %s", __func__);
+        fprintf(stderr,"Error unable to get more memory in - %s on line - %d\n", __func__, __LINE__);
         return EXIT_FAILURE;
     }
     

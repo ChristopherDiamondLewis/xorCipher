@@ -15,14 +15,14 @@ int checkArgs(int argc, char *argv[])
     
     if(argc != 5 )
     {
-        fprintf(stderr,"Error amount of arguments!\n");
+        fprintf(stderr,"Error incorrect amount of arguments!\n");
         fprintf(stderr,"Usage: encryptUtil -n #of threads -k keyfile\n");
         return EXIT_FAILURE;
     }
 
     numofThreads = atoi(argv[2]);
 
-    if(numofThreads > THREAD_MAX || numofThreads < 0)
+    if(numofThreads > THREAD_MAX || numofThreads <= 0)
     {
         fprintf(stderr,"Number of threads requested out of range.\n");
         fprintf(stderr,"Thread count range is [%d - %d] inclusive.\n", 1, THREAD_MAX);
@@ -33,7 +33,7 @@ int checkArgs(int argc, char *argv[])
 
     if(keyfilePtr == NULL)
     {
-        fprintf(stderr,"Error keyfile named ' %s ' did not open!\n", argv[4]);
+        fprintf(stderr,"Error: keyfile named ' %s ' did not open!\n", argv[4]);
         return EXIT_FAILURE;
     }
 
@@ -67,16 +67,17 @@ void leftRotate(unsigned char *hexValues, unsigned long int fileSize, int numRot
         {
             if(i == 0)
             {
-                first_bit_in_file = (hexValues[i] >> 7) & 1;
+                first_bit_in_file = (hexValues[i] >> 7) & 1;    //< Must capture first bit in file to add to last bit later.
             }
             else if(i == fileSize - 1)
             {
-                curr_msb = (hexValues[i] >> 7) & 1;
+                curr_msb = (hexValues[i] >> 7) & 1;             
                 hexValues[i - 1] = (hexValues[i - 1] << 1 | curr_msb);
-                hexValues[i] = (hexValues[i] << 1 | first_bit_in_file);
+                hexValues[i] = (hexValues[i] << 1 | first_bit_in_file); //< On final byte in array must add our carry from first bit in array.
             }
             else
             {
+                curr_msb = (hexValues[i] >> 7) & 1;             
                 hexValues[i - 1] = (hexValues[i - 1] << 1 | curr_msb);
             }
         }
@@ -94,7 +95,7 @@ void *threadFunc(void *threadId)
 
     if(threadKeyFileValues == NULL)
     {
-        fprintf(stderr,"Error unable to get more memory in - %s", __func__);
+        fprintf(stderr,"Error: thread %d was unable to get more memory in - %s", myid,__func__);
         return (void*)EXIT_FAILURE;
     }
 
@@ -118,7 +119,7 @@ void *threadFunc(void *threadId)
         chunkIndex++;
     }
 
-    // Dont' forget to free!
+    // Don't forget to free!
     free(threadKeyFileValues);
 
     return (void*)EXIT_SUCCESS;

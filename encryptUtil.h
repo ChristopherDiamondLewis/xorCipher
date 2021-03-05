@@ -30,7 +30,7 @@ pthread_mutex_t plainTextValuesMtx;     //<Mutex for blocking conncurrent writes
 FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-ping to memory.
 
 /*
-*   @brief Fuction will check arguments passed in from command line
+*   @brief Function will check arguments passed in from command line
 *           for correct argument count, ensure number of threads asked for
 *           is within defined range and that the file that will be used for 
 *           encrypting (keyfile) is a valid file and does open.
@@ -41,7 +41,9 @@ FILE *keyfilePtr;                       //<Pointer to our keyfile used for mmap-
 */
         int checkArgs(int argc, char *argv[]);
 /*
-*   @brief Function will circular left rotate any given array of values a 'numRotations' amount of times
+*   @brief Function will circular left rotate any given array of values a 'numRotations' amount of times.
+*               because of the way the rotation is done, the hexvalues will repeat every 'N' times, where
+*               'N' is the number of BITS in the hexvalues array, or hexvalues array length times 8.
 *           
 *   @param[in] hexValues, of type unsigned char pointers, used as array of values that will be rotated.
 *   @param[in] fileSize, of type unsigned long int, meant to represent size of file in bytes, used to determine how many bytes we must rotate.
